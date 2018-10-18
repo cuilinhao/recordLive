@@ -107,22 +107,47 @@ extension ViewController {
         
         self.videoInput = videoInput
         
-        //2.3 将input 添加到会话中
-        //session.addInput()
-        session.addInput(videoInput)
+        //2.3 将input 添加到会话
+        //MARK:- *******第二次添加的时候会奔溃*******************
+        
+        //session.addInput(videoInput)
+        
+        if let inputs = session.inputs as? [AVCaptureDeviceInput] {
+         
+            for input in inputs {
+             
+                session.removeInput(input)
+            }
+        }
+        
+        if session.inputs.isEmpty {
+            
+            session.addInput(videoInput)
+        }
+        
         
         //3.给捕捉会话设置输出源
         //session.addOutput(nil)
         
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self as? AVCaptureVideoDataOutputSampleBufferDelegate, queue: videoQueue)
-        session.addOutput(videoOutput)
+        
+        if let outputs = session.outputs as? [AVCaptureDeviceInput] {
+            
+            for output in outputs {
+                
+                session.removeInput(output)
+            }
+        }
+        
+        if session.outputs.isEmpty {
+            session.addOutput(videoOutput)
+        }
+        
         
         //connection = videoOutput.connection(with: AVMediaType.video)
         
         self.videoOutput = videoOutput
-        
-        
     }
     
     
@@ -143,7 +168,20 @@ extension ViewController {
     //2. 给会话设置音频输出源
     let audioOutPut = AVCaptureAudioDataOutput()
     audioOutPut.setSampleBufferDelegate(self as? AVCaptureAudioDataOutputSampleBufferDelegate, queue: audioQueue)
-    session.addOutput(audioOutPut)
+    //---
+    if let outputs = session.outputs as? [AVCaptureDeviceInput] {
+        
+        for output in outputs {
+            
+            session.removeInput(output)
+        }
+    }
+    
+    if session.outputs.isEmpty {
+        
+         session.addOutput(audioOutPut)
+    }
+   
     
     
    }
