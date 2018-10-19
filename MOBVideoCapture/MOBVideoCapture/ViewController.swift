@@ -25,6 +25,8 @@ class ViewController: UIViewController {
     fileprivate var videoOutput : AVCaptureVideoDataOutput?
     
     fileprivate var videoInput : AVCaptureDeviceInput?
+    fileprivate var movieOutPut : AVCaptureMovieFileOutput?
+    
     
     //MARK:- life Cycle
     override func viewDidLoad() {
@@ -41,23 +43,62 @@ extension ViewController {
     
     @IBAction func starCapture(_ sender: Any) {
         
-        //设置视频的输入输出
+        //1.设置视频的输入输出
         getVideo()
         
-        //设置音频的输入和x输出
+        //2.设置音频的输入和x输出
         getAudio()
         
+        //3.添加写入文件的output
+        //MARK:- >>>>>>>>>>>第二次开始采集奔溃>>>>>>>>>
+        let movieOutput = AVCaptureMovieFileOutput()
+        
+        
+        if let outputs = session.outputs as? [AVCaptureOutput] {
+            
+            for output in outputs {
+                
+                session.removeOutput(output)
+            }
+        }
+        
+        if session.outputs.isEmpty {
+           session.addOutput(movieOutput)
+        }
+        
+        //session.addOutput(movieOutput)
+        
+         self.movieOutPut = movieOutput
+        
+        //设置写入的稳定性
+        let connection = movieOutput.connection(with: AVMediaType.video)
+        connection?.preferredVideoStabilizationMode = .auto
+        
+        
         //4.给用户看到一个预览图层
-        //let previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.frame = view.bounds
         view.layer.addSublayer(previewLayer)
         view.layer .insertSublayer(previewLayer, at: 0)
         
         //5.开始采集
         session.startRunning()
+        
+        //6.开始录制
+        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/abc.mp4"
+        
+        let url = URL(fileURLWithPath: path)
+        
+        movieOutput.startRecording(to: url, recordingDelegate: self)
+        
+       
+        
+        
     }
     
     @IBAction func stopCapture(_ sender: Any) {
+        
+        self.movieOutPut?.stopRecording()
+        
         session.stopRunning()
         previewLayer.removeFromSuperlayer()
     }
@@ -132,13 +173,14 @@ extension ViewController {
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self as? AVCaptureVideoDataOutputSampleBufferDelegate, queue: videoQueue)
         
-        if let outputs = session.outputs as? [AVCaptureDeviceInput] {
+        if let outputs = session.outputs as? [AVCaptureOutput] {
             
             for output in outputs {
                 
-                session.removeInput(output)
+                session.removeOutput(output)
             }
         }
+        
         
         if session.outputs.isEmpty {
             session.addOutput(videoOutput)
@@ -168,14 +210,15 @@ extension ViewController {
     //2. 给会话设置音频输出源
     let audioOutPut = AVCaptureAudioDataOutput()
     audioOutPut.setSampleBufferDelegate(self as? AVCaptureAudioDataOutputSampleBufferDelegate, queue: audioQueue)
-    //---
-    if let outputs = session.outputs as? [AVCaptureDeviceInput] {
+    
+    if let outputs = session.outputs as? [AVCaptureOutput] {
         
         for output in outputs {
             
-            session.removeInput(output)
+            session.removeOutput(output)
         }
     }
+    
     
     if session.outputs.isEmpty {
         
@@ -239,6 +282,17 @@ extension ViewController : AVCaptureVideoDataOutputSampleBufferDelegate {
             print("++++++++已经采集音频画面")
          }
         
+    }
+}
+
+extension ViewController : AVCaptureFileOutputRecordingDelegate {
+
+    func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
+        print("----开始写入文件")
+    }
+    
+    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+         print("----结束写入文件")
     }
 }
 
