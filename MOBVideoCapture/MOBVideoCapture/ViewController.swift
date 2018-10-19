@@ -54,13 +54,23 @@ extension ViewController {
         let movieOutput = AVCaptureMovieFileOutput()
         
         
-        if let outputs = session.outputs as? [AVCaptureOutput] {
+//        if let outputs = session.outputs as? [AVCaptureOutput] {
+//
+//            for output in outputs {
+//
+//                session.removeOutput(output)
+//            }
+//        }
+        
+        //---
+        if let outputs = session.outputs as [AVCaptureOutput]? {
             
             for output in outputs {
                 
                 session.removeOutput(output)
             }
         }
+        
         
         if session.outputs.isEmpty {
            session.addOutput(movieOutput)
@@ -118,7 +128,7 @@ extension ViewController {
         //let session = AVCaptureSession()
         
         //2.给捕捉会话设置输入源(摄像头)
-        guard let devices = AVCaptureDevice.devices(for: AVMediaType.video) as? [AVCaptureDevice] else {
+        guard let devices = AVCaptureDevice.devices(for: AVMediaType.video) as [AVCaptureDevice]? else {
             print("摄像头不可用")
             return
         }
@@ -171,9 +181,9 @@ extension ViewController {
         //session.addOutput(nil)
         
         let videoOutput = AVCaptureVideoDataOutput()
-        videoOutput.setSampleBufferDelegate(self as? AVCaptureVideoDataOutputSampleBufferDelegate, queue: videoQueue)
+        videoOutput.setSampleBufferDelegate(self as AVCaptureVideoDataOutputSampleBufferDelegate?, queue: videoQueue)
         
-        if let outputs = session.outputs as? [AVCaptureOutput] {
+        if let outputs = session.outputs as [AVCaptureOutput]? {
             
             for output in outputs {
                 
@@ -211,7 +221,7 @@ extension ViewController {
     let audioOutPut = AVCaptureAudioDataOutput()
     audioOutPut.setSampleBufferDelegate(self as? AVCaptureAudioDataOutputSampleBufferDelegate, queue: audioQueue)
     
-    if let outputs = session.outputs as? [AVCaptureOutput] {
+    if let outputs = session.outputs as [AVCaptureOutput]? {
         
         for output in outputs {
             
