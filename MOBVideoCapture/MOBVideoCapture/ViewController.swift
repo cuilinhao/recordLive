@@ -27,6 +27,7 @@ class ViewController: UIViewController {
     fileprivate var videoInput : AVCaptureDeviceInput?
     fileprivate var movieOutPut : AVCaptureMovieFileOutput?
     
+    fileprivate var connection : AVCaptureConnection?
     
     //MARK:- life Cycle
     override func viewDidLoad() {
@@ -53,15 +54,6 @@ extension ViewController {
         //MARK:- >>>>>>>>>>>第二次开始采集奔溃>>>>>>>>>
         let movieOutput = AVCaptureMovieFileOutput()
         
-        
-//        if let outputs = session.outputs as? [AVCaptureOutput] {
-//
-//            for output in outputs {
-//
-//                session.removeOutput(output)
-//            }
-//        }
-        
         //---
         if let outputs = session.outputs as [AVCaptureOutput]? {
             
@@ -76,13 +68,13 @@ extension ViewController {
            session.addOutput(movieOutput)
         }
         
-        //session.addOutput(movieOutput)
-        
          self.movieOutPut = movieOutput
         
         //设置写入的稳定性
         let connection = movieOutput.connection(with: AVMediaType.video)
         connection?.preferredVideoStabilizationMode = .auto
+        
+        self.connection = connection
         
         
         //4.给用户看到一个预览图层
@@ -99,9 +91,6 @@ extension ViewController {
         let url = URL(fileURLWithPath: path)
         
         movieOutput.startRecording(to: url, recordingDelegate: self)
-        
-       
-        
         
     }
     
@@ -269,7 +258,7 @@ extension ViewController {
         
         session.removeInput(self.videoInput!)
         session.addInput(videoInput)
-        
+        self.connection?.preferredVideoStabilizationMode = .auto
         session.commitConfiguration()
         
         self.videoInput = videoInput
